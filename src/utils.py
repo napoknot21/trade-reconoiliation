@@ -4,7 +4,7 @@ import os
 import datetime as dt
 import polars as pl
 
-from src.config import (FUNDATIONS, FREQUENCY_DATE_MAP, KINDS_COLUMNS_DICT, CASH_COLUMNS)
+from src.config import (FUNDATIONS, FREQUENCY_DATE_MAP)
 
 from typing import Optional, List, Dict
 
@@ -187,7 +187,51 @@ def generate_dates (
 
 
 
+def previous_business_day (date : Optional[str | dt.datetime | dt.date] = None) -> dt.date :
+    """
+    Previous business day using a simple weekend rule:
+    - Monday -> previous Friday
+    - Sunday -> previous Friday
+    - Saturday -> previous Friday
+    - Otherwise -> previous day
+    """
+    date = str_to_date(date)
+    wd = date.weekday()  # Mon=0 ... Sun=6
+    
+    if wd == 0 :       # Monday
+        return date - dt.timedelta(days=2)
+    
+    if wd == 6 :       # Sunday
+        return date - dt.timedelta(days=1)
+    
+    #if wd == 5 :       # Saturday
+    #    return date - dt.timedelta(days=1)
+    
+    return date - dt.timedelta(days=1)
 
 
+
+def next_business_day (date : Optional[str | dt.datetime | dt.date] = None) -> dt.date :
+    """
+    Docstring for next_business_day
+    
+    :param date: Description
+    :type date: Optional[str | dt.datetime | dt.date]
+    :return: Description
+    :rtype: date
+    """
+    date = str_to_date(date)
+    wd = date.weekday()  # Mon=0 ... Sun=6
+
+    if wd == 4 :       # Friday
+        return date + dt.timedelta(days=3)
+    
+    if wd == 5 :       # Saturday
+        return date + dt.timedelta(days=2)
+    
+    if wd == 6 :       # Sunday
+        return date + dt.timedelta(days=1)
+    
+    return date + dt.timedelta(days=1)
 
 

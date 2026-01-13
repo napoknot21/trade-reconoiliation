@@ -53,14 +53,6 @@ FUNDATIONS = {
 }
 
 
-ALL_FUNDATIONS = [
-
-    "HV",
-    "WR"
-
-]
-
-
 # -------- Email informtion schema --------
 
 EMAIL_COLUMNS = {
@@ -75,60 +67,6 @@ EMAIL_COLUMNS = {
 }
 
 
-# Cash columns format
-CASH_COLUMNS = {
-
-    "Fundation" : pl.Utf8,
-    "Account" : pl.Utf8, # "Account Number" : pl.Utf8,
-    "Date" : pl.Date,
-    "Bank" : pl.Utf8,
-    "Currency" : pl.Utf8,
-    "Type" : pl.Utf8,
-    "Amount in CCY" : pl.Float64,
-    "Exchange" : pl.Float64,
-    "Amount in EUR" : pl.Float64
-
-}
-
-
-# Collateral columns format
-COLLATERAL_COLUMNS = {
-
-    "Fundation" : pl.Utf8,
-    "Account" : pl.Utf8, # "Account Number" : pl.Utf8,
-    "Date" : pl.Date,
-    "Bank" : pl.Utf8,
-    "Currency" : pl.Utf8,
-    "Total" : pl.Float64, #"Total Collateral at Bank" : pl.Float64,
-    "IM" : pl.Float64,
-    "VM" : pl.Float64,
-    "Requirement" : pl.Float64,
-    "Net Excess/Deficit" : pl.Float64
-
-}
-
-
-KINDS_COLUMNS_DICT = {
-
-    "cash" : CASH_COLUMNS,
-    "collateral" : COLLATERAL_COLUMNS
-
-}
-
-
-# PATHS
-"""
-CACHE_DIR_ABS_PATH = os.getenv("CACHE_DIR_ABS_PATH")
-CACHE_FILE_NAME = os.getenv("CACHE_FILE_NAME")
-CACHE_CLOSE_VALS = os.getenv("CACHE_CLOSE_VALS")
-
-CACHE_FILENAME_ABS = os.path.join(CACHE_DIR_ABS_PATH, CACHE_FILE_NAME)
-CACHE_CLOSE_VALS_ABS = os.path.join(CACHE_DIR_ABS_PATH, CACHE_CLOSE_VALS)
-
-HISTORY_DIR_ABS_PATH= os.getenv("HISTORY_DIR_ABS_PATH")
-ATTACH_DIR_ABS_PATH = os.getenv("ATTACH_DIR_ABS_PATH")
-RAW_DIR_ABS_PATH = os.getenv("RAW_DIR_ABS_PATH")
-"""
 
 FREQUENCY_DATE_MAP = {
 
@@ -152,23 +90,7 @@ MS = {
 
 }
 
-MS_REQUIRED_COLUMNS = {
 
-    "account" : pl.Utf8,
-    "ccy" : pl.Utf8,
-    "quantity" : pl.Float64
-}
-
-MS_TARGET_FIELDS = {
-
-    "Net MTM" : pl.Float64,
-    "Upfront Amount Rec / (Pay)" : pl.Float64,
-    "Customer Balances" : pl.Float64
-
-}
-
-MS_FILENAMES_CASH = os.getenv("MS_FILENAMES_CASH")
-MS_FILENAMES_COLLATERAL = os.getenv("MS_FILENAMES_COLLATERAL")
 
 MS_TABLE_PAGES = {
 
@@ -181,7 +103,6 @@ MS_FILENAMES = os.getenv("MS_FILENAMES")
 
 MS_ATTACHMENT_DIR_ABS_PATH = os.getenv("MS_ATTACHMENT_DIR_ABS_PATH")
 
-MS_ENTITY = os.getenv("MS_ENTITY")
 
 MS_ACCOUNTS = {
 
@@ -203,29 +124,28 @@ GS = {
 GS_REQUIRED_COLUMNS = {
 
     "GS Entity" : pl.Utf8,
-    "Account Number" : pl.Utf8,
+    "Trade Id" : pl.Utf8,
+    "Customer Account Nummber" : pl.Int64,
+    "Transaction Type" : pl.Utf8,
+    "Buy/Sell" : pl.Utf8,
+    #"Trade Date" : pl.Date,
+    #"Effective Date" : pl.Date,
+    "Notional(1)" : pl.Int64,
+    "Not1Ccy" : pl.Utf8,
+    "Notional(2)" : pl.Int64,
+    "Not2Ccy" : pl.Utf8,
+    "Notional (USD)" : pl.Int64,
+    "Vega Notional" : pl.Float64,
+    "Under" : pl.Utf8, # Not sure about the dtype
+    "Strike Price" : pl.Float64,
     "Post/Held" : pl.Utf8,
     "Quantity" : pl.Float64,
     "Currency" : pl.Utf8,
 
 }
 
-GS_TARGET_FIELDS = {
-
-    "Total Collateral" : pl.Float64,
-    "CP Initial Margin" : pl.Float64,
-    "Total Requirement" : pl.Float64,
-    "Total Exposure" : pl.Float64,
-    "Reference ccy" : pl.Utf8,
-    "Exposure (VM)" : pl.Float64,
-
-}
-
-GS_FILENAMES_CASH = os.getenv("GS_FILENAMES_CASH")
-GS_FILENAMES_COLLATERAL = os.getenv("GS_FILENAMES_COLLATERAL")
 
 GS_FILENAMES = os.getenv("GS_FILENAMES")
-
 GS_ENTITY = os.getenv("GS_ENTITY")
 
 GS_ACCOUNTS = {
@@ -246,20 +166,9 @@ SAXO = {
 
 }
 
-SAXO_REQUIRED_COLUMNS = {
-
-    "Account" : pl.Utf8,
-    "AccountCurrency" : pl.Utf8,
-    "Balance" : pl.Float64,
-    "TotalEquity" : pl.Float64,
-    "ValueDateCashBalance" : pl.Float64,
-    "AccountFunding" : pl.Float64
-    
-}
 
 SAXO_FILENAMES = os.getenv("SAXO_FILENAMES")
 SAXO_ATTACHMENT_DIR_ABS_PATH = os.getenv("SAXO_ATTACHMENT_DIR_ABS_PATH")
-
 
 
 
@@ -280,24 +189,10 @@ UBS_REQUIRED_COLUMNS = {
 
 }
 
-USB_TARGET_FIELDS = {
-
-    "Currency" : pl.Utf8,
-    "Mtm Value" : pl.Float64, # VM
-
-    "Client Initial Margin" : pl.Float64, # IM
-    "Total Requirement" : pl.Float64, # Requirement
-    "Collateral Held by UBS" : pl.Float64, # Total
-    "Collateral Pledged by UBS" : pl.Utf8,
-    
-    "Net Excess/Deficit" : pl.Float64,
-    
-}
 
 UBS_ATTACHMENT_DIR_ABS_PATH = os.getenv("UBS_ATTACHMENT_DIR_ABS_PATH")
 
-UBS_FILENAMES_CASH = os.getenv("UBS_FILENAMES_CASH")
-UBS_FILENAMES_COLLATERAL = os.getenv("UBS_FILENAMES_COLLATERAL")
+UBS_FILENAMES = os.getenv("UBS_FILENAMES")
 
 # Counterparties
 COUNTERPARTIES = {
