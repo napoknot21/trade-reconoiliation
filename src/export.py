@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import datetime as dt
 from typing import Dict, List, Optional, Union, Any
 
@@ -145,4 +146,79 @@ def export_trade_reconciliation (
             row += 1  # spacer between date blocks
 
     wb.save(out_path)
+
     return out_path
+
+
+
+def save_trades_by_date_parquet (
+    
+        trades_by_date : dict,
+        out_dir_abs_path : Optional[str] = None,
+    
+    ) -> Optional[str] :
+    """
+    Docstring for save_trades_by_date_parquet
+    
+    :param trades_by_date: Description
+    :type trades_by_date: dict
+    :param out_dir_abs_path: Description
+    :type out_dir_abs_path: Optional[str]
+    :return: Description
+    :rtype: str | None
+    """
+    os.makedirs(out_dir_abs_path, exist_ok=True)
+
+    index = {
+        
+        "created_at": dt.datetime.now().isoformat(timespec="seconds"),
+        "format": "parquet+index_v1",
+        "items": []
+    
+    }
+
+    for d, fund_map in trades_by_date.items() :
+
+        d_str = date_to_str(d)
+
+        for fund, cpty_map in fund_map.items() :
+
+            for cpty, dfs in cpty_map.items() :
+
+                # dfs peut être DF ou list[DF] ou None
+                if isinstance(dfs, pl.DataFrame) :
+                    dfs_list = [dfs]
+                
+                else :
+                    dfs_list = dfs or []
+
+                for i, df in enumerate(dfs_list) :
+
+                    if not isinstance(df, pl.DataFrame):
+                        continue
+
+                    rel_path = os.path.join(d_str, fund, cpty, f"df_{i}.parquet")
+                    abs_path = os.path.join(out_dir_abs_path, rel_path)
+                    
+                    os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+
+                    df.write_parquet(abs_path)
+
+                    index["items"].append(
+                    
+                        {
+                            "date": d_str,
+                            "fundation": fund,
+                            "counterparty": cpty,
+                            "i": i,
+                            "path": rel_path,
+                        }
+                    
+                    )
+
+    index_path = os.path.join(out_dir_abs_path, "trades_index.json")
+    
+    with open(index_path, "w", encoding="utf-8") as f :
+        json.dump(index, f, indent=2, ensure_ascii=False)
+
+    return index_path

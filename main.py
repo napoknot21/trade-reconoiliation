@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import json
 import argparse
 import polars as pl
 import datetime as dt
@@ -9,9 +10,10 @@ from typing import Optional, List, Dict
 
 from src.config import FUNDATIONS, COUNTERPARTIES, SHARED_MAILS, EMAIL_COLUMNS, RAW_DIR_ABS_PATH, ATTACHMENT_DIR_ABS_PATH, DATA_DIR_ABS_PATH
 from src.msal import get_token, get_inbox_messages_by_date, download_attachments_for_message
-from src.utils import str_to_date, date_to_str, generate_dates, previous_business_day, next_business_day, generate_download_dates
+from src.utils import str_to_date, date_to_str, generate_dates, previous_business_day, generate_download_dates
 from src.extraction import split_by_counterparty
-from src.export import export_trade_reconciliation
+from src.export import export_trade_reconciliation, save_trades_by_date_parquet
+
 from src.counterparties.ubs import ubs_trades
 from src.counterparties.gs import gs_trades
 from src.counterparties.saxo import saxo_trades
@@ -160,17 +162,9 @@ def main (
     out_path = export_trade_reconciliation(trades_by_date=trades_by_date, asked_dates=asked_dates, output_dir=data_dir_abs,)
     print(f"\n[+] File saved at {out_path}")
 
-    return None
+    save_trades_by_date_parquet(trades_by_date, "./")
 
-
-
-def args () :
-    """
-    Docstring for args
-    """
-
-    return None
-
+    return trades_by_date
 
 
 if __name__ == "__main__" :
