@@ -299,10 +299,6 @@ def split_by_counterparty (
     nrules = _normalize_rules(rules)
 
     work = _extract_sender_columns(df2)
-    print("==========================")
-    print(work)
-    
-    print("==========================")
     work = _normalize_attachments(work, attachment_column)
     work = _init_assignment(work)
 

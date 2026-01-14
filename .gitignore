@@ -1,5 +1,7 @@
 __pycache__/
 attachments/
+data/
+raw/
 .env
 *.xlsx
 *.pdf

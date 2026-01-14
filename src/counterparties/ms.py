@@ -29,9 +29,9 @@ def ms_trades (
     date = str_to_date(date)
     fundation = "HV" if fundation is None else fundation
 
-    rules = SAXO_FILENAMES if rules is None else rules
+    rules = MS_FILENAMES if rules is None else rules
     
-    dir_abs_path = SAXO_ATTACHMENT_DIR_ABS_PATH if dir_abs_path is None else dir_abs_path
+    dir_abs_path = MS_ATTACHMENT_DIR_ABS_PATH if dir_abs_path is None else dir_abs_path
     os.makedirs(dir_abs_path, exist_ok=True)
 
     filenames = find_files_by_date_n_fundation(date, fundation, rules=rules, dir_abs_path=dir_abs_path) if filenames is None else filenames

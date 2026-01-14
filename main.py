@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import os
 import argparse
 import polars as pl
 import datetime as dt
 
 from typing import Optional, List, Dict
 
-from src.config import FUNDATIONS, COUNTERPARTIES, SHARED_MAILS, EMAIL_COLUMNS
+from src.config import FUNDATIONS, COUNTERPARTIES, SHARED_MAILS, EMAIL_COLUMNS, RAW_DIR_ABS_PATH, ATTACHMENT_DIR_ABS_PATH, DATA_DIR_ABS_PATH
 from src.msal import get_token, get_inbox_messages_by_date, download_attachments_for_message
-from src.utils import str_to_date, date_to_str, generate_dates, previous_business_day, next_business_day
+from src.utils import str_to_date, date_to_str, generate_dates, previous_business_day, next_business_day, generate_download_dates
 from src.extraction import split_by_counterparty
-
+from src.export import export_trade_reconciliation
 from src.counterparties.ubs import ubs_trades
 from src.counterparties.gs import gs_trades
 from src.counterparties.saxo import saxo_trades
@@ -42,6 +43,10 @@ def main (
         schema_overrides : Optional[Dict] = None,
         yesterday : Optional[bool] = True,
 
+        raw_dir_abs : Optional[str] = None,
+        attch_dir_abs : Optional[str] = None,
+        data_dir_abs : Optional[str] = None,
+
     ) :
     """
     Docstring for main
@@ -55,30 +60,22 @@ def main (
         start_date = date_to_str(previous_business_day(today))
         end_date = start_date
 
-        end_date_download = today
-
     else :
         
         start_date = date_to_str(start_date)
         end_date = date_to_str(end_date)
 
-        if end_date != today :
-            end_date_download = next_business_day(end_date)
-
-        else :
-            end_date_download = end_date
-    
     asked_dates = generate_dates(start_date, end_date)
     asked_dates = [str_to_date(date) for date in asked_dates]
 
-    download_dates = generate_dates(start_date, end_date_download)
-    download_dates = [str_to_date(date) for date in download_dates]
-
-    print(asked_dates)
-    print(download_dates)
+    download_dates = generate_download_dates(asked_dates)
 
     fundations = FUNDATIONS if fundations is None else [fundations]
     counterparties = COUNTERPARTIES if counterparties is None else counterparties
+
+    raw_dir_abs = RAW_DIR_ABS_PATH if raw_dir_abs is None else raw_dir_abs
+    attch_dir_abs = ATTACHMENT_DIR_ABS_PATH if attch_dir_abs is None else attch_dir_abs
+    data_dir_abs = DATA_DIR_ABS_PATH if data_dir_abs is None else data_dir_abs
 
     token = get_token() if token is None else token
     shared_emails = SHARED_MAILS if shared_emails is None else shared_emails
@@ -87,6 +84,8 @@ def main (
 
     # Set of dates for which we already called ensure_inputs_for_date
     for date in download_dates :
+        
+        print(f"\n[*] Donwloading date : {date_to_str(date)}\n")
 
         inbox_df = pl.DataFrame(schema=schema_overrides)
 
@@ -100,23 +99,52 @@ def main (
         if inbox_df.is_empty() :
 
             print(f"\n[-] No inbox data on {date}.")
-            return
+            continue
         
-        print(inbox_df)
         rules_map = split_by_counterparty(inbox_df)
 
-        print(rules_map)
-
-
         # Here we will donwload all the files for seleceted dates
-        # TODO
+        for counterparty, df_cp in rules_map.items() :
+
+            if counterparty == "UNMATCHED" or df_cp.is_empty() :
+                continue
+            
+            os.makedirs(raw_dir_abs, exist_ok=True)
+            raw_out = os.path.join(raw_dir_abs, f"{counterparty.lower()}_{date_to_str(date)}.xlsx")
+
+            try :
+                df_cp.write_excel(raw_out)
+            
+            except Exception as e :
+                print(f"\n[-] Failed writing {raw_out}: {e}")
+
+            for row in df_cp.to_dicts() :
+
+                msg_id = row.get("Id")
+                origin = row.get("Shared Email")
+
+                if not msg_id :
+                    continue
+
+                try :
+
+                    dest = os.path.join(attch_dir_abs, counterparty)
+                    os.makedirs(dest, exist_ok=True)
+
+                    # avoid re-writing if same file already exists
+                    download_attachments_for_message(msg_id, token, dest, origin)
+
+                except Exception as e :
+                    print(f"\n[-] Attachment download failed for {counterparty} {date}: {e}")
 
 
     # Here we normally have already donwload all email / files 
         
-    trades = {}
+    trades_by_date = {}
 
     for date in asked_dates :
+
+        trades = {}
 
         for fundation in fundations :
 
@@ -126,8 +154,11 @@ def main (
                 for ctpy, func in counterparties.items()
             }
 
-    print(trades)
+        trades_by_date[date] = trades
 
+    
+    out_path = export_trade_reconciliation(trades=trades, asked_dates=asked_dates, output_dir=data_dir_abs,)
+    print(f"\n[+] File saved at {out_path}")
 
     return None
 

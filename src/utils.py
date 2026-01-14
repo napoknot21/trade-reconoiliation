@@ -121,8 +121,10 @@ def generate_dates (
         
         start_date : Optional[str | dt.datetime] = None,
         end_date : Optional[str | dt.datetime] = None,
+        
         frequency : str = "Day",
         frequency_map : Optional[Dict] = None,
+        
         format : str = "%Y-%m-%d"
     
     ) -> Optional[List]:
@@ -166,7 +168,7 @@ def generate_dates (
         return None
     
     # Filter out weekends for non-business day frequencies
-    series_dates_wd = series_dates.filter(series_dates.dt.weekday() <= 6)
+    series_dates_wd = series_dates.filter(series_dates.dt.weekday() <= 5)
     
     if series_dates_wd.len() == 0 :
 
@@ -199,13 +201,13 @@ def previous_business_day (date : Optional[str | dt.datetime | dt.date] = None) 
     wd = date.weekday()  # Mon=0 ... Sun=6
     
     if wd == 0 :       # Monday
-        return date - dt.timedelta(days=2)
+        return date - dt.timedelta(days=3)
     
     if wd == 6 :       # Sunday
-        return date - dt.timedelta(days=1)
+        return date - dt.timedelta(days=2)
     
-    #if wd == 5 :       # Saturday
-    #    return date - dt.timedelta(days=1)
+    if wd == 5 :       # Saturday
+        return date - dt.timedelta(days=1)
     
     return date - dt.timedelta(days=1)
 
@@ -233,5 +235,47 @@ def next_business_day (date : Optional[str | dt.datetime | dt.date] = None) -> d
         return date + dt.timedelta(days=1)
     
     return date + dt.timedelta(days=1)
+
+
+
+
+def generate_download_dates (
+        
+        asked_dates : List[str | dt.datetime | dt.date],
+        format : str = "%Y-%m-%d"
+    
+    ) -> Optional[List[dt.date]]:
+    """
+    Function that returns a list of dates based on the start date, end date and frequency
+
+    Args:
+        start_date (str): start date in format 'YYYY-MM-DD'
+        end_date (str): end date in format 'YYYY-MM-DD'
+        frequency (str): 'Day', 'Week', 'Month', 'Quarter', 'Year' represents the frequency of the equity curve
+        
+    Returns:
+        list: list of dates in format 'YYYY-MM-DD' or None
+    """
+    download_date = set()
+    asked_dates = [str_to_date(date, format) for date in asked_dates]
+
+    for date in asked_dates :
+        
+        download_date.add(date)
+
+        next_day = next_business_day(date)
+
+        if next_day <= dt.date.today() :
+            download_date.add(next_day)
+
+        if date.weekday() ==  4 : # If it's friday
+             
+            saturday = date + dt.timedelta(days=1)
+            download_date.add(saturday)
+    
+    download_date = sorted(download_date)
+
+    return download_date
+
 
 

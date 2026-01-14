@@ -112,7 +112,7 @@ def process_file (
         
         dataframe = pl.read_csv(full_path, separator=separator)
 
-        if dataframe is None or dataframe.is_empty() :
+        if dataframe is None :
             continue
         
         #dataframe = pl.from_pandas(dataframe)
