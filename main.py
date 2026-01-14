@@ -157,7 +157,7 @@ def main (
         trades_by_date[date] = trades
 
     
-    out_path = export_trade_reconciliation(trades=trades, asked_dates=asked_dates, output_dir=data_dir_abs,)
+    out_path = export_trade_reconciliation(trades_by_date=trades_by_date, asked_dates=asked_dates, output_dir=data_dir_abs,)
     print(f"\n[+] File saved at {out_path}")
 
     return None
