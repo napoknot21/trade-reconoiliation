@@ -50,12 +50,12 @@ def find_files_by_date_n_fundation (
         date : Optional[str | dt.datetime | dt.date] = None,
         fundation : str = "HV",
 
-        d_format : str = "%b %d, %Y",
+        d_format : str = "%Y%m%d",
 
         rules : Optional[str] = None,
         dir_abs_path : Optional[str] = None,
 
-        extensions : Tuple[str, str] = ("xls", "xlsx")
+        extensions : Tuple[str, str] = ("csv",)
 
     ) :
     """
@@ -72,13 +72,8 @@ def find_files_by_date_n_fundation (
     for entry in os.listdir(dir_abs_path) :
 
         if entry.lower().endswith(extensions) and rules in entry :
-
-            full_path = os.path.join(dir_abs_path, entry)
             
-            out = pl.read_excel(full_path, engine="calamine")
-
-            #if date in entry and rules in entry :
-            if get_date_from_file_df(out, date) :
+            if date in entry :
 
                 print(f"\n[+] [UBS] File found for {date} and for {full_fundation} : {entry}")
                 return entry
@@ -114,11 +109,7 @@ def process_file (
     
     full_path = os.path.join(dir_abs_path, filename)
 
-    dataframe = pd.read_excel(full_path, skiprows=skip_rows, engine="xlrd")
-    dataframe = dataframe.dropna(subset=["Deal Code"])
-
-    dataframe = pl.from_pandas(dataframe)
-    dataframe = dataframe[[s.name for s in dataframe if not (s.null_count() == dataframe.height)]]
+    dataframe = pl.read_csv(full_path, has_header=True, truncate_ragged_lines=True)
 
     return dataframe
 

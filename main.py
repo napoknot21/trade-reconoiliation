@@ -8,7 +8,7 @@ import datetime as dt
 
 from typing import Optional, List, Dict
 
-from src.config import FUNDATIONS, COUNTERPARTIES, SHARED_MAILS, EMAIL_COLUMNS, RAW_DIR_ABS_PATH, ATTACHMENT_DIR_ABS_PATH, DATA_DIR_ABS_PATH
+from src.config import FUNDATIONS, COUNTERPARTIES, SHARED_MAILS, EMAIL_COLUMNS, RAW_DIR_ABS_PATH, ATTACHMENT_DIR_ABS_PATH, DATA_DIR_ABS_PATH, CACHE_DIR_ABS_PATH
 from src.msal import get_token, get_inbox_messages_by_date, download_attachments_for_message
 from src.utils import str_to_date, date_to_str, generate_dates, previous_business_day, generate_download_dates
 from src.extraction import split_by_counterparty
@@ -48,6 +48,7 @@ def main (
         raw_dir_abs : Optional[str] = None,
         attch_dir_abs : Optional[str] = None,
         data_dir_abs : Optional[str] = None,
+        cache_dir_abs : Optional[str] = None,
 
     ) :
     """
@@ -78,6 +79,7 @@ def main (
     raw_dir_abs = RAW_DIR_ABS_PATH if raw_dir_abs is None else raw_dir_abs
     attch_dir_abs = ATTACHMENT_DIR_ABS_PATH if attch_dir_abs is None else attch_dir_abs
     data_dir_abs = DATA_DIR_ABS_PATH if data_dir_abs is None else data_dir_abs
+    cache_dir_abs = CACHE_DIR_ABS_PATH if cache_dir_abs is None else cache_dir_abs
 
     token = get_token() if token is None else token
     shared_emails = SHARED_MAILS if shared_emails is None else shared_emails
@@ -162,7 +164,7 @@ def main (
     out_path = export_trade_reconciliation(trades_by_date=trades_by_date, asked_dates=asked_dates, output_dir=data_dir_abs,)
     print(f"\n[+] File saved at {out_path}")
 
-    save_trades_by_date_parquet(trades_by_date, "./")
+    save_trades_by_date_parquet(trades_by_date, cache_dir_abs)
 
     return trades_by_date
 

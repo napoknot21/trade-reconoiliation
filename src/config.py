@@ -144,6 +144,16 @@ GS_REQUIRED_COLUMNS = {
 
 }
 
+GS_STOCKS = [os.getenv("GS_FX"), os.getenv("GS_EQ")]
+
+GS_STOCKS_SHEETS = {
+
+    os.getenv("GS_FX") :  [e.strip() for e in os.getenv("GS_FX_SHEETS").split(";") if e.strip()],
+    os.getenv("GS_EQ") :  [e.strip() for e in os.getenv("GS_EQ_SHEETS").split(";") if e.strip()]
+
+}
+
+print(GS_STOCKS_SHEETS)
 
 GS_FILENAMES = os.getenv("GS_FILENAMES")
 GS_ENTITY = os.getenv("GS_ENTITY")
