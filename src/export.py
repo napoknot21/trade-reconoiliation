@@ -83,7 +83,7 @@ def export_trade_reconciliation (
     os.makedirs(output_dir, exist_ok=True)
     now = date_to_str(dt.datetime.now(), format=format)
 
-    out_path = os.path.join(output_dir, f"trade-reconciliation_{now}.xlsx")
+    out_path = os.path.join(output_dir, f"{now}_Heroics_OTC_Broker_Positions.xlsx")
 
     wb = Workbook()
     wb.remove(wb.active)
@@ -104,7 +104,7 @@ def export_trade_reconciliation (
             block = (trades_by_date.get(d) or {}).get(fundation) or {}
 
             # Title for date
-            title = f"Counterparty Reconciliation at {d.isoformat()}"
+            title = f"Heroics External Brokers Data - OTC Positions as of {d.isoformat()}"
             
             tcell = ws.cell(row=row, column=1, value=title)
             tcell.font = Font(bold=True, size=14)
